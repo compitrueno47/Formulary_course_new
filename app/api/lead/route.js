@@ -26,7 +26,7 @@ export async function POST(req) {
     const verification_token = crypto.randomBytes(24).toString('hex')
 
     const { error } = await supabase
-      .from('leads')
+      .from('pending_leads')
       .upsert(
         [
           {
@@ -38,14 +38,12 @@ export async function POST(req) {
             email,
             accepted_privacy,
             verification_token,
-            verified_at: null,
           },
         ],
         { onConflict: 'email' }
       )
 
     if (error) {
-      console.error('SUPABASE ERROR:', error)
       return NextResponse.json(
         { error: `Supabase: ${error.message}` },
         { status: 500 }
@@ -54,40 +52,32 @@ export async function POST(req) {
 
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${verification_token}`
 
-    const mail = await resend.emails.send({
+    const { error: mailError } = await resend.emails.send({
       from: process.env.EMAIL_FROM,
       to: email,
       subject: 'Verifica tu correo para confirmar tu plaza',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Confirma tu correo electrónico</h2>
-          <p>Hola ${nombre},</p>
-          <p>Gracias por registrarte. Para confirmar tu plaza y recibir la información de la sesión, verifica tu correo haciendo clic aquí:</p>
-          <p>
-            <a href="${verifyUrl}" style="display:inline-block;padding:12px 20px;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:8px;">
-              Verificar correo
-            </a>
-          </p>
-          <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
-          <p>${verifyUrl}</p>
-        </div>
+        <h2>Confirma tu correo</h2>
+        <p>Hola ${nombre},</p>
+        <p>Pulsa aquí para verificar tu email:</p>
+        <p><a href="${verifyUrl}">Verificar correo</a></p>
+        <p>Si no funciona, copia este enlace:</p>
+        <p>${verifyUrl}</p>
       `,
     })
 
-    if (mail.error) {
-      console.error('RESEND ERROR:', mail.error)
+    if (mailError) {
       return NextResponse.json(
-        { error: `Resend: ${mail.error.message}` },
+        { error: `Resend: ${mailError.message}` },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       ok: true,
-      message: 'Tus datos se han guardado y te hemos enviado un correo de verificación.',
+      message: 'Te hemos enviado un correo de verificación.',
     })
   } catch (err) {
-    console.error('SERVER ERROR:', err)
     return NextResponse.json(
       { error: err.message || 'Error interno del servidor' },
       { status: 500 }

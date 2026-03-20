@@ -10,27 +10,19 @@ export async function POST(req) {
   try {
     const body = await req.json()
 
-    const nombre = body.nombre
-    const apellidos = body.apellidos
-    const direccion = body.direccion
-    const codigo_postal = body.codigo_postal || body.codigoPostal
-    const telefono = body.telefono
-    const email = body.email
-    const accepted_privacy = body.accepted_privacy ?? body.acceptedPrivacy ?? false
+    const payload = {
+      nombre: body.nombre,
+      apellidos: body.apellidos,
+      direccion: body.direccion,
+      codigo_postal: body.codigo_postal || body.codigoPostal,
+      telefono: body.telefono,
+      email: body.email,
+      accepted_privacy: body.accepted_privacy ?? body.acceptedPrivacy ?? false,
+    }
 
     const { data, error } = await supabase
       .from('leads')
-      .insert([
-        {
-          nombre,
-          apellidos,
-          direccion,
-          codigo_postal,
-          telefono,
-          email,
-          accepted_privacy,
-        },
-      ])
+      .insert([payload])
       .select()
 
     if (error) {

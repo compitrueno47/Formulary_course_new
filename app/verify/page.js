@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 export const dynamic = 'force-dynamic'
 
 export default async function VerifyPage({ searchParams }) {
-  const token = searchParams.token
+  const token = searchParams?.token
 
   if (!token) {
     return <div style={{ padding: 40 }}>Token no válido.</div>

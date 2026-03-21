@@ -25,7 +25,7 @@ export async function POST(req) {
 
     const verification_token = crypto.randomBytes(24).toString('hex')
 
-    const { error } = await supabase
+    const { error: dbError } = await supabase
       .from('pending_leads')
       .upsert(
         [
@@ -43,9 +43,9 @@ export async function POST(req) {
         { onConflict: 'email' }
       )
 
-    if (error) {
+    if (dbError) {
       return NextResponse.json(
-        { error: `Supabase: ${error.message}` },
+        { error: `Supabase: ${dbError.message}` },
         { status: 500 }
       )
     }
@@ -57,12 +57,18 @@ export async function POST(req) {
       to: email,
       subject: 'Verifica tu correo para confirmar tu plaza',
       html: `
-        <h2>Confirma tu correo</h2>
-        <p>Hola ${nombre},</p>
-        <p>Pulsa aquí para verificar tu email:</p>
-        <p><a href="${verifyUrl}">Verificar correo</a></p>
-        <p>Si no funciona, copia este enlace:</p>
-        <p>${verifyUrl}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Confirma tu correo</h2>
+          <p>Hola ${nombre},</p>
+          <p>Pulsa en este botón para verificar tu email:</p>
+          <p>
+            <a href="${verifyUrl}" style="display:inline-block;padding:12px 20px;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:8px;">
+              Verificar correo
+            </a>
+          </p>
+          <p>Si el botón no funciona, copia y pega este enlace:</p>
+          <p>${verifyUrl}</p>
+        </div>
       `,
     })
 

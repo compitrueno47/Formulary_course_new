@@ -50,7 +50,8 @@ export async function POST(req) {
       )
     }
 
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${verification_token}`
+    // URL FIJA para evitar que falle la variable de entorno
+    const verifyUrl = `https://formularycoursenew.vercel.app/verify?token=${verification_token}`
 
     const { error: mailError } = await resend.emails.send({
       from: process.env.EMAIL_FROM,
@@ -66,8 +67,8 @@ export async function POST(req) {
               Verificar correo
             </a>
           </p>
-          <p>Si el botón no funciona, copia y pega este enlace:</p>
-          <p>${verifyUrl}</p>
+          <p>Si el botón no funciona, copia y pega este enlace en el navegador:</p>
+          <p style="word-break: break-all;">${verifyUrl}</p>
         </div>
       `,
     })
@@ -89,4 +90,4 @@ export async function POST(req) {
       { status: 500 }
     )
   }
-}
+}3
